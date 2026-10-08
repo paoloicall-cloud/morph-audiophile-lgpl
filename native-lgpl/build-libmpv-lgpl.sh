@@ -94,7 +94,9 @@ copy_license libunibreak $D/libunibreak/LICENCE $D/libunibreak/LICENSE
 copy_license libmpv-android LICENSE
 # Lua: la licenza è in fondo a src/lua.h
 if [ -f $D/lua/src/lua.h ]; then
-    awk '/Copyright \(C\) 1994/{p=1} p{print} p&&/\*\//{exit}' $D/lua/src/lua.h > "$LICENSES/lua.txt"
+    # il blocco di licenza inizia con "* Copyright (C) 1994-…" (non la #define LUA_COPYRIGHT)
+    awk '/^\* Copyright \(C\) 1994/{p=1} p{print} p&&/\*\//{exit}' $D/lua/src/lua.h > "$LICENSES/lua.txt"
+    [ -s "$LICENSES/lua.txt" ] || echo "ATTENZIONE: licenza di lua non estratta" >&2
 else
     echo "ATTENZIONE: licenza di lua non trovata" >&2
 fi
