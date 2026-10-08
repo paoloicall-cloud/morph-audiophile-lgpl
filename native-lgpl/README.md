@@ -38,4 +38,5 @@ bash native-lgpl/make-source-offer.sh https://<tuo-sito>/morph-audiophile-lgpl-s
 ## Note
 - Gli script modificano i file di build di libmpv-android con `sed` e si fermano se il testo atteso non c'è più. Cambiando `LIBMPV_ANDROID_REF` vanno ricontrollati.
 - `MEDIA3_REF` deve coincidere con la versione di Media3 in `app/build.gradle.kts`.
-- Script non ancora eseguiti: sul PC di sviluppo non c'è un ambiente Linux. Alla prima esecuzione può servire qualche aggiustamento.
+- Eseguiti con successo nella run #2 (release `lgpl-2`) di https://github.com/paoloicall-cloud/morph-audiophile-lgpl. Le versioni esatte sono in `build-info/`.
+- Le modifiche a questi script vanno ricaricate anche nel repository pubblico prima di rilanciare il workflow.
