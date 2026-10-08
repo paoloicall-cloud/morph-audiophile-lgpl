@@ -13,14 +13,14 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
       TAG: lgpl-${{ github.run_number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -53,7 +53,7 @@ jobs:
             --title "LGPL sources $TAG" \
             --notes "Complete corresponding source code of the LGPL libraries (FFmpeg, mpv and dependencies) distributed with Morph Audiophile, with the build scripts used."
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: morph-audiophile-lgpl
           path: |
