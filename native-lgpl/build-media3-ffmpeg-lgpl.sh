@@ -32,6 +32,11 @@ MODULE="$(pwd)/libraries/decoder_ffmpeg/src/main"
 cd "$MODULE/jni"
 [ -d ffmpeg ] || git clone https://git.ffmpeg.org/ffmpeg.git --branch="$FFMPEG_BRANCH" --depth=1 ffmpeg
 grep -q -- '--enable-gpl' build_ffmpeg.sh && fail "build_ffmpeg.sh abilita la GPL: controllare"
+# iconv (solo per i sottotitoli) esiste in Android dalla API 28, ma il modulo JNI si collega per una
+# API più bassa: senza questa opzione il link di libffmpegJNI.so fallisce su iconv_open/iconv/iconv_close
+git checkout -- build_ffmpeg.sh
+grep -q -- '--disable-vulkan' build_ffmpeg.sh || fail "build_ffmpeg.sh è cambiato: aggiornare la modifica qui sotto"
+sed -i 's/--disable-vulkan/--disable-vulkan\n    --disable-iconv/' build_ffmpeg.sh
 ./build_ffmpeg.sh "$MODULE" "$NDK_PATH" "$HOST_PLATFORM" "$ANDROID_ABI" "${ENABLED_DECODERS[@]}"
 
 # Verifica sulle librerie statiche prodotte: FFmpeg deve dichiararsi LGPL
