@@ -1,0 +1,63 @@
+# Workflow GitHub Actions del repository pubblico paoloicall-cloud/morph-audiophile-lgpl.
+# Il repository contiene SOLO questi script di compilazione (cartella native-lgpl/), nessun codice
+# dell'app. Compila le librerie LGPL e pubblica l'archivio dei sorgenti come release: è l'offerta
+# del codice sorgente richiesta dalla LGPL, e il suo indirizzo finisce in SOURCE_OFFER.txt.
+# Le librerie compilate si scaricano dall'artefatto "morph-audiophile-lgpl" dell'esecuzione.
+name: Build LGPL native
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      TAG: lgpl-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Dipendenze di sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf pkgconf libtool ninja-build python3-pip python3-jinja2 gperf nasm unzip rsync wget
+          sudo pip3 install --break-system-packages meson
+
+      - name: libmpv LGPL
+        run: bash native-lgpl/build-libmpv-lgpl.sh
+
+      - name: Estensione FFmpeg di Media3 LGPL
+        run: |
+          NDK_PATH="$(ls -d "$ANDROID_HOME"/ndk/* | sort -V | tail -n 1)" \
+            bash native-lgpl/build-media3-ffmpeg-lgpl.sh
+
+      - name: Archivio dei sorgenti e offerta
+        run: |
+          export ARCHIVE_NAME="morph-audiophile-lgpl-sources-$TAG"
+          bash native-lgpl/make-source-offer.sh \
+            "https://github.com/${{ github.repository }}/releases/download/$TAG/$ARCHIVE_NAME.tar.gz"
+
+      - name: Pubblica i sorgenti come release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" native-lgpl/out/*.tar.gz \
+            --title "LGPL sources $TAG" \
+            --notes "Complete corresponding source code of the LGPL libraries (FFmpeg, mpv and dependencies) distributed with Morph Audiophile, with the build scripts used."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: morph-audiophile-lgpl
+          path: |
+            app/libs/*.aar
+            app/src/main/assets/licenses/third_party/
+            app/src/main/assets/licenses/SOURCE_OFFER.txt
+            native-lgpl/work/*-versions.txt
