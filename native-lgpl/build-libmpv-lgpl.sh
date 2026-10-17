@@ -86,16 +86,18 @@ rm -rf _build$ndk_suffix
 mkdir -p _build$ndk_suffix
 cd _build$ndk_suffix
 
-# CMake 4 rifiuta cmake_minimum_required < 3.5 (soxr dichiara 3.1)
+# CMake 4 rifiuta cmake_minimum_required < 3.5 (soxr dichiara 3.1). Si installa direttamente nel prefisso:
+# con prefisso "/" più DESTDIR CMake costruisce "//share/doc" e lo rifiuta come percorso di rete.
+# FFmpeg cerca soxr con soxr.h e -lsoxr, non con pkg-config: il percorso assoluto nel soxr.pc non conta.
 "$cmake_bin" .. -G Ninja \
 	-DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/$v_ndk/build/cmake/android.toolchain.cmake" \
 	-DANDROID_ABI="$(basename "$prefix_dir")" -DANDROID_PLATFORM=android-26 \
-	-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/ -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+	-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$prefix_dir" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF \
 	-DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DWITH_OPENMP=OFF -DWITH_LSR_BINDINGS=OFF -DWITH_DEV_TRACE=OFF
 
 "$cmake_bin" --build . -j$cores
-DESTDIR="$prefix_dir" "$cmake_bin" --install .
+"$cmake_bin" --install .
 EOF
 
 # libbs2b: il configure pretende libsndfile (solo per i programmi di esempio), quindi si compila a mano
