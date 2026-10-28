@@ -48,7 +48,7 @@ sed -i 's/-Dlibmpv=true/-Dlibmpv=true -Dgpl=false/' "$f"
 #     Si riabilitano solo i filtri che servono, più libsoxr (LGPL 2.1+) e libbs2b (MIT): niente GPL.
 f=buildscripts/scripts/ffmpeg.sh
 grep -q -- '--disable-v4l2-m2m' "$f" || fail "$f è cambiato: aggiornare la modifica dei filtri"
-FILTERS="aformat,aresample,anull,abuffer,abuffersink,volume,equalizer,bass,treble,bs2b,afir,amovie,hdcd,aemphasis,alimiter,asetrate,atempo"
+FILTERS="aformat,aresample,anull,abuffer,abuffersink,volume,equalizer,bass,treble,bs2b,afir,amovie,hdcd,aemphasis,alimiter,asetrate,atempo,adelay,aeval"
 sed -i "s/--disable-v4l2-m2m/--disable-v4l2-m2m --enable-filter=$FILTERS --enable-libsoxr --enable-libbs2b --extra-libs=-lm/" "$f"
 
 f=buildscripts/include/depinfo.sh
