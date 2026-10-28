@@ -46,9 +46,12 @@ sed -i 's/-Dlibmpv=true/-Dlibmpv=true -Dgpl=false/' "$f"
 #     libmpv-android compila FFmpeg con --disable-filters: restano solo aresample/aformat e mpv rifiuta in
 #     silenzio EQ, crossfeed, FIR, HDCD, de-enfasi, accordatura e limitatore (verificato 2026-10-17).
 #     Si riabilitano solo i filtri che servono, più libsoxr (LGPL 2.1+) e libbs2b (MIT): niente GPL.
+#     Sezione DSP (28/10): adelay/aeval (diffusori), stereotools (mono, bilanciamento, fase, Mid/Side), haas
+#     (pseudo-stereo), highpass/lowpass (protezione), acompressor, anequalizer/biquad (EQ per canale), pan,
+#     channelsplit/join/asplit/amerge/amix (instradamento dei canali). Nessuno dipende dalla GPL nel configure.
 f=buildscripts/scripts/ffmpeg.sh
 grep -q -- '--disable-v4l2-m2m' "$f" || fail "$f è cambiato: aggiornare la modifica dei filtri"
-FILTERS="aformat,aresample,anull,abuffer,abuffersink,volume,equalizer,bass,treble,bs2b,afir,amovie,hdcd,aemphasis,alimiter,asetrate,atempo,adelay,aeval"
+FILTERS="aformat,aresample,anull,abuffer,abuffersink,volume,equalizer,bass,treble,bs2b,afir,amovie,hdcd,aemphasis,alimiter,asetrate,atempo,adelay,aeval,stereotools,haas,highpass,lowpass,acompressor,anequalizer,biquad,pan,channelsplit,join,asplit,amerge,amix"
 sed -i "s/--disable-v4l2-m2m/--disable-v4l2-m2m --enable-filter=$FILTERS --enable-libsoxr --enable-libbs2b --extra-libs=-lm/" "$f"
 
 f=buildscripts/include/depinfo.sh
