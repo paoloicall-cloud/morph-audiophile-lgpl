@@ -175,6 +175,15 @@ fetch_tarball libbs2b \
     "https://downloads.sourceforge.net/project/bs2b/libbs2b/3.1.0/libbs2b-3.1.0.tar.gz"
 
 ./patch.sh
+
+# mpv: layout senza nomi di altoparlante (schede da studio da 20-34 uscite). La lista audio-channels con un numero
+# uguale ai canali del brano passa 1:1 e l'uscita pcm verso il driver USB lo scrive con maschera 0: prima un brano a
+# 20 canali su una Scarlett 18i20 veniva ridotto a stereo (banco dei DAC finti, 29/10/2026)
+grep -q 'Morph Audiophile: an unknown layout' deps/mpv/audio/chmap_sel.c 2>/dev/null ||
+    patch -d deps/mpv -p1 --forward < "$HERE/patches/mpv-unknown-layouts.patch" ||
+    fail "patch di mpv non applicata: i sorgenti di mpv sono cambiati, rigenerare patches/mpv-unknown-layouts.patch"
+grep -q 'Morph Audiophile: an unknown layout' deps/mpv/audio/chmap_sel.c || fail "patch di mpv assente dopo l'applicazione"
+
 ./build.sh
 cd ..
 

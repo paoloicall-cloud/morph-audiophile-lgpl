@@ -1,0 +1,41 @@
+--- a/audio/chmap_sel.c
++++ b/audio/chmap_sel.c
+@@ -309,6 +309,16 @@
+ {
+     struct mp_chmap best = {0};
+ 
++    // Morph Audiophile: an unknown layout in the list with exactly the source's channel count is a 1:1 passthrough
++    // (studio interfaces with 20-34 outputs have no named layout). Without this the unknown entry was skipped and
++    // a 20-channel track was downmixed to stereo.
++    for (int n = 0; n < s->num_chmaps; n++) {
++        if (mp_chmap_is_unknown(&s->chmaps[n]) && s->chmaps[n].num == map->num) {
++            *map = s->chmaps[n];
++            return true;
++        }
++    }
++
+     for (int n = 0; n < s->num_chmaps; n++) {
+         struct mp_chmap e = s->chmaps[n];
+ 
+--- a/audio/out/ao_pcm.c
++++ b/audio/out/ao_pcm.c
+@@ -94,7 +94,7 @@
+     // Extension chunk
+     fput16le(22, fp);
+     fput16le(bits, fp);
+-    fput32le(mp_chmap_to_waveext(&ao->channels), fp);
++    fput32le(mp_chmap_is_unknown(&ao->channels) ? 0 : mp_chmap_to_waveext(&ao->channels), fp);
+     // 2 bytes format + 14 bytes guid
+     fput32le(fmt, fp);
+     fput32le(0x00100000, fp);
+@@ -143,6 +143,10 @@
+ 
+     struct mp_chmap_sel sel = {0};
+     mp_chmap_sel_add_waveext(&sel);
++    // Morph Audiophile: more than 18 channels have no WAVE_FORMAT_EXTENSIBLE speaker names; keep the requested
++    // unknown layout (written with channel mask 0) instead of falling back to stereo.
++    if (mp_chmap_is_unknown(&ao->channels))
++        mp_chmap_sel_add_map(&sel, &ao->channels);
+     if (!ao_chmap_sel_adjust(ao, &sel, &ao->channels))
+         return -1;
+ 
