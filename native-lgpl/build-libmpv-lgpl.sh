@@ -184,6 +184,14 @@ grep -q 'Morph Audiophile: an unknown layout' deps/mpv/audio/chmap_sel.c 2>/dev/
     fail "patch di mpv non applicata: i sorgenti di mpv sono cambiati, rigenerare patches/mpv-unknown-layouts.patch"
 grep -q 'Morph Audiophile: an unknown layout' deps/mpv/audio/chmap_sel.c || fail "patch di mpv assente dopo l'applicazione"
 
+# mpv: blocchi piccoli verso la pipe del driver USB (4096 campioni invece di 65536). Col blocco grande libmpv restava fino
+# a 1,5 s dentro una scrittura e un effetto cambiato durante l'ascolto dava un click o un piccolo salto (Pixel col KA5,
+# 2/11/2026)
+grep -q 'Morph Audiophile: small blocks' deps/mpv/audio/out/ao_pcm.c 2>/dev/null ||
+    patch -d deps/mpv -p1 --forward < "$HERE/patches/mpv-pcm-small-blocks.patch" ||
+    fail "patch di mpv non applicata: i sorgenti di mpv sono cambiati, rigenerare patches/mpv-pcm-small-blocks.patch"
+grep -q 'ao->device_buffer = 4096;' deps/mpv/audio/out/ao_pcm.c || fail "blocco di ao_pcm non ridotto dopo la patch"
+
 ./build.sh
 cd ..
 

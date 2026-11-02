@@ -1,0 +1,15 @@
+--- a/audio/out/ao_pcm.c
++++ b/audio/out/ao_pcm.c
+@@ -170,7 +170,11 @@
+     if (priv->waveheader)  // Reserve space for wave header
+         write_wave_header(ao, priv->fp, 0x7ffff000);
+     ao->untimed = true;
+-    ao->device_buffer = 1 << 16;
++    // Morph Audiophile: small blocks towards the pipe of the USB driver. With 65536 samples (1.5 s at 44.1 kHz) the
++    // player thread stayed inside one blocking write for up to 1.5 s and did not apply a new filter chain or a seek
++    // until it came out: changing an effect while listening gave a click or a small jump. 4096 samples are 93 ms at
++    // 44.1 kHz and 21 ms at 192 kHz.
++    ao->device_buffer = 4096;
+
+     return 0;
+ }
