@@ -146,7 +146,7 @@ ninja -C libplacebo/_b >/dev/null && ninja -C libplacebo/_b install >/dev/null
 cp libplacebo/LICENSE "$OUT/licenses/libplacebo-LICENSE.txt"
 # libplacebo usa std::to_chars/from_chars: il link di mpv (fatto con gcc, non g++) deve aggiungere libstdc++ statica
 grep -q 'lstdc++' "$PREFIX/lib/pkgconfig/libplacebo.pc" || \
-    sed -i 's|^Libs.private:.*|& -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic|' "$PREFIX/lib/pkgconfig/libplacebo.pc"
+    sed -i 's|^Libs:.*|& -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic|' "$PREFIX/lib/pkgconfig/libplacebo.pc"
 grep -n 'Libs' "$PREFIX/lib/pkgconfig/libplacebo.pc"
 
 # ---- libass e dipendenze (mpv 0.41 le vuole anche per un uso solo audio): FreeType, FriBidi, HarfBuzz, libass ----
