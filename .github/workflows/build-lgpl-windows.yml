@@ -27,6 +27,11 @@ jobs:
       - name: libmpv LGPL per Windows
         run: bash native-lgpl/build-libmpv-windows-lgpl.sh
 
+      - uses: actions/upload-artifact@v7
+        with:
+          name: libmpv-prima-della-prova
+          path: native-lgpl/out-windows/libmpv-2.dll
+
       - name: Prova con Wine
         run: |
           cd native-lgpl
@@ -38,9 +43,10 @@ jobs:
           PY
           x86_64-w64-mingw32-gcc-win32 -O2 -o libmpv_smoke.exe tests/libmpv_smoke.c
           export WINEDEBUG=-all WINEPREFIX="$RUNNER_TEMP/wine"
-          wineboot -i >/dev/null 2>&1 || true
+          WINE="$(command -v wine || command -v wine64 || echo /usr/lib/wine/wine64)"; echo "wine: $WINE"
+          "$WINE" wineboot -i >/dev/null 2>&1 || true
           cp out-windows/libmpv-2.dll .
-          wine libmpv_smoke.exe libmpv-2.dll prova.wav out.pcm
+          "$WINE" libmpv_smoke.exe libmpv-2.dll prova.wav out.pcm
 
       - name: Archivio dei sorgenti e offerta
         run: |

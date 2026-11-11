@@ -8,7 +8,7 @@ SRC="$HERE/work-windows/src"; OUT="$HERE/out-windows"
 NAME="${1:-morph-pc-lgpl-sources-$(date +%Y%m%d)}"
 [ -f "$SRC/ffmpeg.txz" ] || { echo "Esegui prima build-libmpv-windows-lgpl.sh" >&2; exit 1; }
 STAGE="$(mktemp -d)/$NAME"; mkdir -p "$STAGE"
-cp "$SRC"/zlib.tgz "$SRC"/soxr.tgz "$SRC"/bs2b.tgz "$SRC"/ffmpeg.txz "$STAGE/"
+cp "$SRC"/zlib.tgz "$SRC"/soxr.tgz "$SRC"/bs2b.tgz "$SRC"/ffmpeg.txz "$SRC"/freetype.txz "$SRC"/fribidi.txz "$SRC"/harfbuzz.txz "$SRC"/libass.txz "$STAGE/"
 for d in mpv libplacebo; do
     rsync -a --exclude '.git' --exclude '_b' "$SRC/$d/" "$STAGE/$d/"
 done
