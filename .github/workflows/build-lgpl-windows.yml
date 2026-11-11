@@ -1,0 +1,66 @@
+# Workflow GitHub Actions (repository pubblico morph-audiophile-lgpl): libmpv LGPL per Windows (Morph PC).
+# Cross-compila su Ubuntu con mingw-w64, prova la DLL con Wine e pubblica sorgenti + DLL come release.
+name: Build LGPL libmpv Windows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      TAG: lgpl-win-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Dipendenze di sistema
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y git wget xz-utils bzip2 pkgconf cmake ninja-build meson python3-jinja2 python3-mako \
+            nasm yasm make autoconf automake libtool gperf gcc-mingw-w64-x86-64-win32 g++-mingw-w64-x86-64-win32 \
+            binutils-mingw-w64-x86-64 wine64
+
+      - name: libmpv LGPL per Windows
+        run: bash native-lgpl/build-libmpv-windows-lgpl.sh
+
+      - name: Prova con Wine
+        run: |
+          cd native-lgpl
+          python3 - <<'PY'
+          import wave, struct, math
+          w = wave.open('prova.wav', 'wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(48000)
+          w.writeframes(b''.join(struct.pack('<hh', int(8000*math.sin(i/20)), int(8000*math.sin(i/31))) for i in range(48000*3)))
+          w.close()
+          PY
+          x86_64-w64-mingw32-gcc-win32 -O2 -o libmpv_smoke.exe tests/libmpv_smoke.c
+          export WINEDEBUG=-all WINEPREFIX="$RUNNER_TEMP/wine"
+          wineboot -i >/dev/null 2>&1 || true
+          cp out-windows/libmpv-2.dll .
+          wine libmpv_smoke.exe libmpv-2.dll prova.wav out.pcm
+
+      - name: Archivio dei sorgenti e offerta
+        run: |
+          export ARCHIVE_NAME="morph-pc-lgpl-sources-$TAG"
+          bash native-lgpl/make-source-offer-windows.sh "$ARCHIVE_NAME"
+
+      - name: Pubblica i sorgenti come release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" native-lgpl/out-windows/*.tar.gz \
+            --title "LGPL sources (Windows) $TAG" \
+            --notes "Complete corresponding source code of the LGPL libraries (FFmpeg, mpv, libplacebo, libsoxr and dependencies) distributed with Morph PC for Windows, with the build scripts used."
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: morph-pc-libmpv-lgpl
+          path: |
+            native-lgpl/out-windows/libmpv-2.dll
+            native-lgpl/out-windows/licenses/
+            native-lgpl/out-windows/versions.txt
+            native-lgpl/out-windows/include/
