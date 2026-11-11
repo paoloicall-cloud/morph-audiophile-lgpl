@@ -21,6 +21,10 @@ PREFIX="$WORK/prefix"
 JOBS="$(nproc)"
 
 V_ZLIB=1.3.1
+V_FREETYPE=2.13.3
+V_FRIBIDI=1.0.16
+V_HARFBUZZ=10.4.0
+V_LIBASS=0.17.4
 V_SOXR=0.1.3
 V_BS2B=3.1.0
 V_PLACEBO=v7.360.1
@@ -140,6 +144,40 @@ meson setup libplacebo/_b libplacebo --cross-file "$WORK/cross.txt" --prefix "$P
     -Dbench=false || { tail -60 libplacebo/_b/meson-logs/meson-log.txt; fail "meson di libplacebo"; }
 ninja -C libplacebo/_b >/dev/null && ninja -C libplacebo/_b install >/dev/null
 cp libplacebo/LICENSE "$OUT/licenses/libplacebo-LICENSE.txt"
+
+# ---- libass e dipendenze (mpv 0.41 le vuole anche per un uso solo audio): FreeType, FriBidi, HarfBuzz, libass ----
+fetch freetype.txz "https://download.savannah.gnu.org/releases/freetype/freetype-$V_FREETYPE.tar.xz"
+rm -rf freetype && mkdir freetype && tar -xf freetype.txz -C freetype --strip-components=1
+cmake -S freetype -B freetype/_b -G Ninja -DCMAKE_TOOLCHAIN_FILE="$WORK/toolchain.cmake" -DCMAKE_INSTALL_PREFIX="$PREFIX" \
+    -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DFT_DISABLE_ZLIB=ON -DFT_DISABLE_BZIP2=ON -DFT_DISABLE_PNG=ON \
+    -DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_BROTLI=ON >/dev/null
+cmake --build freetype/_b -j"$JOBS" >/dev/null && cmake --install freetype/_b >/dev/null
+cp freetype/docs/FTL.TXT "$OUT/licenses/freetype-FTL.txt"
+
+fetch fribidi.txz "https://github.com/fribidi/fribidi/releases/download/v$V_FRIBIDI/fribidi-$V_FRIBIDI.tar.xz"
+rm -rf fribidi && mkdir fribidi && tar -xf fribidi.txz -C fribidi --strip-components=1
+meson setup fribidi/_b fribidi --cross-file "$WORK/cross.txt" --prefix "$PREFIX" --buildtype release \
+    --default-library static -Dbin=false -Ddocs=false -Dtests=false >/dev/null
+ninja -C fribidi/_b >/dev/null && ninja -C fribidi/_b install >/dev/null
+cp fribidi/COPYING "$OUT/licenses/fribidi-COPYING.txt"
+
+fetch harfbuzz.txz "https://github.com/harfbuzz/harfbuzz/releases/download/$V_HARFBUZZ/harfbuzz-$V_HARFBUZZ.tar.xz"
+rm -rf harfbuzz && mkdir harfbuzz && tar -xf harfbuzz.txz -C harfbuzz --strip-components=1
+meson setup harfbuzz/_b harfbuzz --cross-file "$WORK/cross.txt" --prefix "$PREFIX" --buildtype release \
+    --default-library static -Dfreetype=enabled -Dglib=disabled -Dgobject=disabled -Dcairo=disabled -Dicu=disabled \
+    -Dtests=disabled -Ddocs=disabled -Dbenchmark=disabled -Dgdi=disabled -Ddirectwrite=disabled \
+    -Dcpp_link_args="-static-libgcc -static-libstdc++" >/dev/null \
+    || { tail -40 harfbuzz/_b/meson-logs/meson-log.txt; fail "meson di harfbuzz"; }
+ninja -C harfbuzz/_b >/dev/null && ninja -C harfbuzz/_b install >/dev/null
+cp harfbuzz/COPYING "$OUT/licenses/harfbuzz-COPYING.txt"
+
+fetch libass.txz "https://github.com/libass/libass/releases/download/$V_LIBASS/libass-$V_LIBASS.tar.xz"
+rm -rf libass && mkdir libass && tar -xf libass.txz -C libass --strip-components=1
+( cd libass && PKG_CONFIG=pkgconf ./configure --host=$TRIPLE --prefix="$PREFIX" --disable-shared --enable-static \
+    --disable-asm --disable-fontconfig --disable-directwrite --disable-coretext \
+    --disable-require-system-font-provider >/dev/null \
+  && make -j"$JOBS" >/dev/null && make install >/dev/null ) || fail "libass"
+cp libass/COPYING "$OUT/licenses/libass-COPYING.txt"
 
 # ---- FFmpeg (LGPL, senza --enable-gpl) ----
 fetch ffmpeg.txz "https://ffmpeg.org/releases/ffmpeg-$V_FFMPEG.tar.xz"
