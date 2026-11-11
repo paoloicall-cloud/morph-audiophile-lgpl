@@ -19,9 +19,8 @@ jobs:
 
       - name: Dipendenze di sistema
         run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y git wget xz-utils bzip2 pkgconf cmake ninja-build meson python3-jinja2 python3-mako \
+          sudo apt-get update -o Acquire::Retries=5
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=5 git wget xz-utils bzip2 pkgconf cmake ninja-build meson python3-jinja2 python3-mako \
             nasm yasm make autoconf automake libtool gperf gcc-mingw-w64-x86-64-win32 g++-mingw-w64-x86-64-win32 \
             binutils-mingw-w64-x86-64 wine64
 
