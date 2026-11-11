@@ -12,6 +12,7 @@
 # Uso:   ./build-libmpv-windows-lgpl.sh
 # Esito: native-lgpl/out-windows/{libmpv-2.dll, licenses/, versions.txt}
 set -euo pipefail
+trap 'echo "ERRORE alla riga $LINENO: $BASH_COMMAND" >&2' ERR
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 WORK="${WORK_DIR:-$HERE/work-windows}"
