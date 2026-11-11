@@ -169,10 +169,10 @@ rm -rf mpv/_b
 meson setup mpv/_b mpv --cross-file "$WORK/cross.txt" --prefix "$PREFIX" --buildtype release --prefer-static \
     -Dgpl=false -Dlibmpv=true -Dcplayer=false -Dbuild-date=false -Dtests=false -Dmanpage-build=disabled \
     -Dhtml-build=disabled -Dpdf-build=disabled -Dlua=disabled -Djavascript=disabled -Dlibarchive=disabled \
-    -Dlibass=disabled -Dlcms2=disabled -Drubberband=disabled -Duchardet=disabled -Diconv=disabled \
+    -Dlcms2=disabled -Drubberband=disabled -Duchardet=disabled -Diconv=disabled \
     -Dvapoursynth=disabled -Dzimg=disabled -Dlibbluray=disabled -Ddvdnav=disabled -Dcdda=disabled \
-    -Dsdl2=disabled -Dgl=disabled -Dvulkan=disabled -Dd3d11=disabled -Dgl-win32=disabled -Degl-angle=disabled \
-    -Dwasapi=enabled -Dcaca=disabled -Djpeg=disabled -Dwin32-smtc=disabled -Dwin32-internal-pthreads=enabled \
+    -Dsdl2-gamepad=disabled -Dsdl2-audio=disabled -Dsdl2-video=disabled -Dgl=disabled -Dvulkan=disabled -Dd3d11=disabled -Dgl-win32=disabled -Degl-angle=disabled \
+    -Dwasapi=enabled -Dcaca=disabled -Djpeg=disabled -Dwin32-smtc=disabled -Dwin32-threads=enabled -Dplain-gl=disabled -Dd3d-hwaccel=disabled -Dd3d9-hwaccel=disabled -Dgl-dxinterop=disabled -Dlibavdevice=disabled \
     -Dc_link_args="-static-libgcc -Wl,--no-insert-timestamp" -Dcpp_link_args="-static-libgcc -static-libstdc++" \
     || { tail -60 mpv/_b/meson-logs/meson-log.txt; fail "configurazione di mpv fallita"; }
 ninja -C mpv/_b
