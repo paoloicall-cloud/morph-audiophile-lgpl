@@ -106,10 +106,21 @@ cp soxr/LICENCE "$OUT/licenses/libsoxr-LICENCE.txt"
 # ---- libbs2b (MIT) ----
 fetch bs2b.tgz "https://downloads.sourceforge.net/project/bs2b/libbs2b/$V_BS2B/libbs2b-$V_BS2B.tar.bz2"
 rm -rf bs2b && mkdir bs2b && tar -xf bs2b.tgz -C bs2b --strip-components=1
-# libsndfile serve solo al programma bs2bconvert, che non compiliamo: si salta il controllo e si costruisce solo src/
-( cd bs2b && SNDFILE_CFLAGS=-I. SNDFILE_LIBS=-lm ./configure --host=$TRIPLE --prefix="$PREFIX" --disable-shared \
-    --enable-static >/dev/null && make -j"$JOBS" -C src >/dev/null && make -C src install >/dev/null \
-  && make install-pkgconfigDATA >/dev/null )
+# Il configure di libbs2b pretende libsndfile (serve solo al programma bs2bconvert): si compila a mano il solo
+# src/bs2b.c, una libreria C di un file senza dipendenze né macro di esportazione.
+( cd bs2b/src && $CC -O2 -c bs2b.c -o bs2b.o && $AR rcs "$PREFIX/lib/libbs2b.a" bs2b.o \
+  && mkdir -p "$PREFIX/include/bs2b" && cp bs2b.h bs2btypes.h bs2bversion.h "$PREFIX/include/bs2b/" )
+cat > "$PREFIX/lib/pkgconfig/libbs2b.pc" <<EOT
+prefix=$PREFIX
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+Name: libbs2b
+Description: Bauer stereophonic-to-binaural DSP library
+Version: $V_BS2B
+Libs: -L\${libdir} -lbs2b
+Libs.private: -lm
+Cflags: -I\${includedir}/bs2b
+EOT
 [ -f "$PREFIX/lib/libbs2b.a" ] || fail "libbs2b non compilata"
 [ -f "$PREFIX/lib/pkgconfig/libbs2b.pc" ] || fail "libbs2b.pc mancante"
 cp bs2b/COPYING "$OUT/licenses/libbs2b-COPYING.txt"
