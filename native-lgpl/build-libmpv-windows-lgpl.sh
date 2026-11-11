@@ -134,7 +134,7 @@ meson setup libplacebo/_b libplacebo --cross-file "$WORK/cross.txt" --prefix "$P
     --default-library static -Dvulkan=disabled -Dopengl=disabled -Dd3d11=disabled -Dglslang=disabled \
     -Dshaderc=disabled -Dlcms=disabled -Ddemos=false -Dtests=false -Dunwind=disabled -Dxxhash=disabled \
     -Ddovi=disabled -Dlibdovi=disabled -Dgl-proc-addr=disabled -Dvk-proc-addr=disabled -Dfuzz=false \
-    -Dbench=false >/dev/null
+    -Dbench=false || { tail -60 libplacebo/_b/meson-logs/meson-log.txt; fail "meson di libplacebo"; }
 ninja -C libplacebo/_b >/dev/null && ninja -C libplacebo/_b install >/dev/null
 cp libplacebo/LICENSE "$OUT/licenses/libplacebo-LICENSE.txt"
 
