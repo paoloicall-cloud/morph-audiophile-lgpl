@@ -106,9 +106,10 @@ cp soxr/LICENCE "$OUT/licenses/libsoxr-LICENCE.txt"
 # ---- libbs2b (MIT) ----
 fetch bs2b.tgz "https://downloads.sourceforge.net/project/bs2b/libbs2b/$V_BS2B/libbs2b-$V_BS2B.tar.bz2"
 rm -rf bs2b && mkdir bs2b && tar -xf bs2b.tgz -C bs2b --strip-components=1
-( cd bs2b && ./configure --host=$TRIPLE --prefix="$PREFIX" --disable-shared --enable-static \
-    --without-sndfile >/dev/null && make -j"$JOBS" -C src >/dev/null && make -C src install >/dev/null \
-  && make install-pkgconfigDATA >/dev/null 2>&1 || true )
+# libsndfile serve solo al programma bs2bconvert, che non compiliamo: si salta il controllo e si costruisce solo src/
+( cd bs2b && SNDFILE_CFLAGS=-I. SNDFILE_LIBS=-lm ./configure --host=$TRIPLE --prefix="$PREFIX" --disable-shared \
+    --enable-static >/dev/null && make -j"$JOBS" -C src >/dev/null && make -C src install >/dev/null \
+  && make install-pkgconfigDATA >/dev/null )
 [ -f "$PREFIX/lib/libbs2b.a" ] || fail "libbs2b non compilata"
 [ -f "$PREFIX/lib/pkgconfig/libbs2b.pc" ] || fail "libbs2b.pc mancante"
 cp bs2b/COPYING "$OUT/licenses/libbs2b-COPYING.txt"
