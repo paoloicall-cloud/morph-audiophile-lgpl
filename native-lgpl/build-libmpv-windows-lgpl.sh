@@ -57,6 +57,9 @@ cpp = '$CXX'
 ar = '$AR'
 strip = '$STRIP'
 windres = '$WINDRES'
+dlltool = '$TRIPLE-dlltool'
+nm = '$TRIPLE-nm'
+objdump = '$TRIPLE-objdump'
 pkg-config = 'pkgconf'
 [host_machine]
 system = 'windows'
@@ -171,7 +174,7 @@ meson setup mpv/_b mpv --cross-file "$WORK/cross.txt" --prefix "$PREFIX" --build
     -Dsdl2=disabled -Dgl=disabled -Dvulkan=disabled -Dd3d11=disabled -Dgl-win32=disabled -Degl-angle=disabled \
     -Dwasapi=enabled -Dcaca=disabled -Djpeg=disabled -Dwin32-smtc=disabled -Dwin32-internal-pthreads=enabled \
     -Dc_link_args="-static-libgcc -Wl,--no-insert-timestamp" -Dcpp_link_args="-static-libgcc -static-libstdc++" \
-    || { cat mpv/_b/meson-logs/meson-log.txt | tail -60; fail "configurazione di mpv fallita"; }
+    || { tail -60 mpv/_b/meson-logs/meson-log.txt; fail "configurazione di mpv fallita"; }
 ninja -C mpv/_b
 DLL="$(find mpv/_b -name 'libmpv-2.dll' | head -n 1)"
 [ -n "$DLL" ] || fail "libmpv-2.dll non prodotta"
