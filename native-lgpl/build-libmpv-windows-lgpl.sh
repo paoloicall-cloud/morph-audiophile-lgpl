@@ -38,7 +38,7 @@ export CFLAGS="-O2 -I$PREFIX/include" CXXFLAGS="-O2 -I$PREFIX/include" LDFLAGS="
 fail() { echo "ERRORE: $*" >&2; exit 1; }
 for t in $CC $CXX meson ninja cmake pkgconf nasm; do command -v "$t" >/dev/null || fail "manca $t"; done
 
-mkdir -p "$WORK/src" "$PREFIX" "$OUT/licenses"
+mkdir -p "$WORK/src" "$PREFIX/include" "$PREFIX/lib/pkgconfig" "$OUT/licenses"
 cd "$WORK/src"
 
 fetch() { # nome url
